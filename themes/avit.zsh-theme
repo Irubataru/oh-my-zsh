@@ -1,12 +1,12 @@
 # AVIT ZSH Theme
 
 PROMPT='
-$(_user_host)${_current_dir} $(git_prompt_info) $(_ruby_version)
+$(_user_host)${_current_dir} $(_git_light_prompt_info) $(_ruby_version)
 ▶ '
 
 PROMPT2='%{$fg[grey]%}◀%{$reset_color%} '
 
-RPROMPT='$(_vi_status)%{$(echotc UP 1)%}$(_git_time_since_commit) $(git_prompt_status) ${_return_status}%{$(echotc DO 1)%}'
+RPROMPT='$(_vi_status)%{$(echotc UP 1)%}$(_git_time_since_commit) ${_return_status}%{$(echotc DO 1)%}'
 
 local _current_dir="%{$fg[blue]%}%3~%{$reset_color%} "
 local _return_status="%{$fg[red]%}%(?..⍉)%{$reset_color%}"
@@ -32,6 +32,19 @@ function _vi_status() {
 function _ruby_version() {
   if {echo $fpath | grep -q "plugins/rvm"}; then
     echo "%{$fg[grey]%}$(rvm_prompt_info)%{$reset_color%}"
+  fi
+}
+
+# Still show the branch name even if the user has turned off the git status line
+function _git_light_prompt_info() {
+  if [[ "$(command git config --get oh-my-zsh.hide-status 2>/dev/null)" != "1" ]]; then
+    ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
+    ref=$(command git rev-parse --short HEAD 2> /dev/null) || return 0
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
+  else
+    ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
+    ref=$(command git rev-parse --short HEAD 2> /dev/null) || return 0
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_SUFFIX"
   fi
 }
 
